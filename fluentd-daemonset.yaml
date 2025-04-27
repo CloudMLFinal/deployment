@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: fluentd
-  namespace: log-collectors
+  namespace: cloudml
   labels:
     app: fluentd
 spec:
