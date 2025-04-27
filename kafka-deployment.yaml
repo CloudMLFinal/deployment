@@ -44,18 +44,17 @@ metadata:
   name: kafka-service
   namespace: log-collectors
 spec:
+  type: NodePort
   selector:
     app: kafka
   ports:
   - port: 9092
     targetPort: 9092
-    protocol: TCP
     name: internal
-  - port: 9093
-    targetPort: 9093
-    protocol: TCP
+  - port: 29092
+    targetPort: 29092
     name: external
-  type: LoadBalancer
+    nodePort: 29092
 ---
 # Kafka Deployment
 apiVersion: apps/v1
@@ -78,18 +77,16 @@ spec:
         image: confluentinc/cp-kafka:latest
         ports:
         - containerPort: 9092
-        - containerPort: 9093
+          name: internal
+        - containerPort: 29092
+          name: external
         env:
         - name: KAFKA_BROKER_ID
           value: "1"
-        - name: NODE_IP
-          valueFrom:
-            fieldRef:
-              fieldPath: status.hostIP
         - name: KAFKA_LISTENERS
-          value: "INTERNAL://:9092,EXTERNAL://:9093"
+          value: "INTERNAL://:9092,EXTERNAL://:29092"
         - name: KAFKA_ADVERTISED_LISTENERS
-          value: "$(NODE_IP):9093"
+          value: "INTERNAL://kafka-service.log-collectors:9092,EXTERNAL://localhost:29092"
         - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
           value: "INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT"
         - name: KAFKA_INTER_BROKER_LISTENER_NAME
@@ -105,4 +102,4 @@ spec:
         - name: KAFKA_TRANSACTION_STATE_LOG_MIN_ISR
           value: "1"
         - name: KAFKA_AUTO_CREATE_TOPICS_ENABLE
-          value: "true" 
+          value: "true"
