@@ -6,6 +6,7 @@ create-namespaces:
 setup-fluentd:
 	kubectl create serviceaccount fluentd -n cloudml --dry-run=client -o yaml | kubectl apply -f -
 	kubectl create configmap fluentd-config -n cloudml --from-file=fluent.conf --dry-run=client -o yaml | kubectl apply -f -
+	kubectl apply -f fluentd-rbac.yaml
 
 # Deploy all components
 deploy-all: create-namespaces setup-fluentd deploy-kafka deploy-app deploy-fluentd
