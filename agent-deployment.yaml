@@ -1,0 +1,113 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-service
+  namespace: cloudml
+spec:
+  type: LoadBalancer
+  selector:
+    app: cloudml-agent
+  ports:
+  - port: 8000
+    targetPort: 8000
+    nodePort: 30001
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-deployment
+  namespace: cloudml
+spec:
+  strategy:
+     rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cloudml-agent
+  template:
+    metadata:
+      labels:
+        app: cloudml-agent
+    spec:
+      serviceAccountName: cloudml-agent
+      containers:
+      - name: cloudml-agent
+        image: kamikux/cloudml-agent:latest
+        env:
+        - name: MONITORING_NAMESPACE
+          valueFrom:
+            secretKeyRef:
+              name: cloudml-agent-secret
+              key: MONITORING_NAMESPACE
+        - name: MONITORING_SELECTOR
+          valueFrom:
+            secretKeyRef:
+              name: cloudml-agent-secret
+              key: MONITORING_SELECTOR
+        - name: KAFKA_HOST
+          valueFrom:
+            secretKeyRef:
+              name: cloudml-agent-secret
+              key: KAFKA_HOST
+        - name: KAFKA_PORT
+          valueFrom:
+            secretKeyRef:
+              name: cloudml-agent-secret
+              key: KAFKA_PORT
+        - name: KAFKA_TOPIC
+          valueFrom:
+            secretKeyRef:
+              name: cloudml-agent-secret
+              key: KAFKA_TOPIC
+        - name: AGENT_MODEL
+          valueFrom:
+            secretKeyRef:
+              name: cloudml-agent-secret
+              key: AGENT_MODEL
+        - name: AGENT_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: cloudml-agent-secret
+              key: AGENT_API_KEY
+        - name: SOURCE_REPO
+          valueFrom:
+            secretKeyRef:
+              name: cloudml-agent-secret
+              key: SOURCE_REPO
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: cloudml-agent-secret
+              key: GITHUB_TOKEN
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: cloudml-agent-secret
+              key: GITHUB_TOKEN
+        # health check
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 300
+        # readiness probe
+        readinessProbe:
+          httpGet:
+            path: /readynz
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 60
+        # port
+        ports:
+        - containerPort: 8000
+        # assign resources
+        resources:
+          limits:
+            cpu: "1.5"
+            memory: "1024Mi"
+          requests:
+            cpu: "0.5"
+            memory: "512Mi" 
