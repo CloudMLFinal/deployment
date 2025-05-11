@@ -10,7 +10,7 @@ spec:
   ports:
   - port: 8000
     targetPort: 8000
-    nodePort: 30001
+    nodePort: 30002
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -59,94 +59,6 @@ spec:
               key: KAFKA_TOPIC
         - name: AGENT_MODEL
           value: "deepseek-chat"
-        - name: AGENT_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: cloudml-agent-secret
-              key: AGENT_API_KEY
-        - name: SOURCE_REPO
-          valueFrom:
-            secretKeyRef:
-              name: cloudml-agent-secret
-              key: SOURCE_REPO
-        - name: GITHUB_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: cloudml-agent-secret
-              key: GITHUB_TOKEN
-        # health check
-        livenessProbe:
-          httpGet:
-            path: /healthz
-            port: 8000
-          initialDelaySeconds: 30
-          periodSeconds: 300
-        # readiness probe
-        readinessProbe:
-          httpGet:
-            path: /readyz
-            port: 8000
-          initialDelaySeconds: 30
-          periodSeconds: 60
-        # port
-        ports:
-        - containerPort: 8000
-        # assign resources
-        resources:
-          limits:
-            cpu: "1.5"
-            memory: "1024Mi"
-          requests:
-            cpu: "0.5"
-            memory: "512Mi"
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: agent-deployment-deepseek-reasoner
-  namespace: cloudml
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: cloudml-agent-deepseek-reasoner
-  template:
-    metadata:
-      labels:
-        app: cloudml-agent-deepseek-reasoner
-    spec:
-      serviceAccountName: cloudml-agent
-      containers:
-      - name: cloudml-agent-deepseek-reasoner
-        image: kamikux/cloudml-agent:latest
-        env:
-        - name: MONITORING_NAMESPACE
-          valueFrom:
-            secretKeyRef:
-              name: cloudml-agent-secret
-              key: MONITORING_NAMESPACE
-        - name: MONITORING_SELECTOR
-          valueFrom:
-            secretKeyRef:
-              name: cloudml-agent-secret
-              key: MONITORING_SELECTOR
-        - name: KAFKA_HOST
-          valueFrom:
-            secretKeyRef:
-              name: cloudml-agent-secret
-              key: KAFKA_HOST
-        - name: KAFKA_PORT
-          valueFrom:
-            secretKeyRef:
-              name: cloudml-agent-secret
-              key: KAFKA_PORT
-        - name: KAFKA_TOPIC
-          valueFrom:
-            secretKeyRef:
-              name: cloudml-agent-secret
-              key: KAFKA_TOPIC
-        - name: AGENT_MODEL
-          value: "deepseek-reasoner"
         - name: AGENT_API_KEY
           valueFrom:
             secretKeyRef:
