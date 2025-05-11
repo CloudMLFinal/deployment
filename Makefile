@@ -14,9 +14,11 @@ setup-agent:
 	kubectl apply -f agent-secret.yaml
 
 # Deploy all components
-deploy-all: create-namespaces setup-fluentd deploy-kafka deploy-app deploy-fluentd setup-agent deploy-agent
+deploy-all-r1: create-namespaces setup-fluentd deploy-kafka deploy-app deploy-fluentd setup-agent deploy-agent-r1	
 
-deploy-gke: create-namespaces deploy-app setup-agent deploy-agent
+deploy-all-r3: create-namespaces setup-fluentd deploy-kafka deploy-app deploy-fluentd setup-agent deploy-agent-r3
+
+deploy-gke: create-namespaces deploy-app setup-agent deploy-agent-r1 deploy-agent-r3
 
 # Deploy Kafka and Zookeeper
 deploy-kafka:
@@ -31,8 +33,10 @@ deploy-fluentd:
 	kubectl apply -f fluentd-daemonset.yaml
 
 # Deploy the agent
-deploy-agent:
+deploy-agent-r1:
 	kubectl apply -f agent-deployment-r1.yaml
+
+deploy-agent-r3:
 	kubectl apply -f agent-deployment-r3.yaml
 
 # forward the port of kafka service
